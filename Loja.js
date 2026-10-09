@@ -68,8 +68,9 @@ function listarProdutos(lista) {
 }
 
 function cadastrarProduto(lista, nome, categoria, preco, quantidade) {
+  let nomeFor = formatarNome(nome);
   lista.push({
-    nome: nome,
+    nome: nomeFor,
     categoria: categoria,
     preco: preco,
     quantidade: quantidade,
@@ -90,16 +91,16 @@ function calcularValorEstoque(lista) {
 }
 
 function buscarProduto(lista, termo) {
-    let i;
-    let encontrou = false;
-    for(i = 0; i < lista.length; i++){
-        if(lista[i].nome.toUpperCase().includes(termo.toUpperCase())){
-        encontrou = true;
-        break;
+  let i;
+  let encontrou = false;
+  for (i = 0; i < lista.length; i++) {
+    if (lista[i].nome.toUpperCase().includes(termo.toUpperCase())) {
+      encontrou = true;
+      break;
     }
-    }
+  }
   if (encontrou) {
-    console.log("Encontrado: " + lista[i].nome + " - R$ " + lista[i].preco,);
+    console.log("Encontrado: " + lista[i].nome + " - R$ " + lista[i].preco);
     return i;
   }
   console.log("Produto não encontrado.");
@@ -113,9 +114,8 @@ function produtosEmFalta(lista, minimo) {
       produtosEmFalta.push(lista);
     }
   });
-  return console.log(
-    "Produtos com menos de " + minimo + " unidades: " + produtosEmFalta.length,
-  );
+  console.log("Produtos com menos de " + minimo + " unidades: " + produtosEmFalta.length);
+  return produtosEmFalta;
 }
 
 function aplicarDesconto(lista, categoria, percentual) {
@@ -139,31 +139,102 @@ function aplicarDesconto(lista, categoria, percentual) {
         " produtos receberam desconto. Novo preço do(a) " +
         ultimoProduto.nome +
         ": R$ " +
-        ultimoProduto.preco +" ."
+        ultimoProduto.preco +
+        " .",
     );
   }
   return console.log("Nenhum produtos recebeu desconto.");
 }
 
-/*function registrarVenda(lista, nome, quantidade){
-    const indice = buscarProduto(lista, nome);
-}*/
+function registrarVenda(lista, nome, quantidade) {
+  const indice = buscarProduto(lista, nome);
+  if (indice === null && lista[indice] > quantidade) {
+    console.log(
+      "Venda não realizada: estoque insuficiente ou produto inexistente.",
+    );
+    return false;
+  }
+
+  lista[indice].vendidos += quantidade;
+  lista[indice].quantidade -= quantidade;
+  console.log(
+    "Venda realizada! " +
+      nome +
+      ": " +
+      lista[indice].quantidade +
+      "  un. em estoque, " +
+      lista[indice].vendidos +
+      " vendidos.",
+  );
+  return true;
+}
+
+function formatarNome(texto) {
+  let textoFormatado;
+  textoFormatado = texto.trim().toLowerCase();
+  textoFormatado =
+    textoFormatado.charAt(0).toUpperCase() + textoFormatado.slice(1);
+  return textoFormatado;
+}
+
+function converterParaJSON(lista) {
+  const texto = JSON.stringify(lista);
+  return texto;
+}
+
+function lerJSON(texto) {
+  const lista = JSON.parse(texto);
+  console.log(
+    "Itens recuperados: " + lista.length + " | Primeiro: " + lista[0].nome,
+  );
+  return lista;
+}
+
+function listarEmFalta(lista){
+   lista.forEach(function (n) {
+    console.log(" - "+n.nome+" ( "+n.quantidade+" un.)\n")
+  });
+}
+
+function gerarRelatorio(nome, lista) {
+  let listaEmfalta = [];
+  listaEmfalta = produtosEmFalta(lista, 5)
+  console.log(
+    "===== RELATÓRIO: " +
+      nome.toUpperCase() +
+      " ===== \nProdutos cadastrados: " +
+      lista.length +
+      "\nValor total em estoque: R$ " +
+      calcularValorEstoque(lista) +
+      " \nProdutos com estoque baixo: " +
+      listaEmfalta.length+"\n"
+  );
+  listarEmFalta(listaEmfalta);
+}
 
 // ===== 3. PROGRAMA PRINCIPAL =====
 // os testes: chamadas das funções e console.log
 //--- Tarefa N: descrição ---.
 
-console.log(nomeLoja);
-console.log("\n--- Tarefa 2: Listar os produtos ---\n");
+console.log("--- Tarefa 2: Listar os produtos ---");
 listarProdutos(produtos);
-console.log("\n--- Tarefa 3: Cadastrar um produto ---\n");
+console.log("--- Tarefa 3: Cadastrar um produto ---");
 cadastrarProduto(produtos, "goibada", "fruta", 1.5, 10);
-console.log("\n--- Tarefa 4: Valor do estoque ---\n");
+console.log("--- Tarefa 4: Valor do estoque ---");
 calcularValorEstoque(produtos);
-console.log("\n--- Tarefa 5: Buscar um produto ---\n");
+console.log("--- Tarefa 5: Buscar um produto ---");
 buscarProduto(produtos, "brigadeiro");
-console.log("\n--- Tarefa 6: Produtos em falta ---\n");
+console.log("--- Tarefa 6: Produtos em falta ---");
 produtosEmFalta(produtos, 5);
-console.log("\n--- Tarefa 7: Aplicar desconto ---\n");
+console.log("--- Tarefa 7: Aplicar desconto ---");
 aplicarDesconto(produtos, "Bebida", 10);
-console.log("\n--- Tarefa 8: Registrar uma venda ---\n");
+console.log("--- Tarefa 8: Registrar uma venda ---");
+registrarVenda(produtos, "Pastel", 5); //fazer isso mais duas vezes
+console.log("--- Tarefa 9: Padronizar nomes ---");
+console.log(formatarNome(" bORRACHA branca "));
+console.log("--- Tarefa 10: Salvar e recuperar em JSON ---");
+console.log(typeof converterParaJSON(produtos));
+const texto = converterParaJSON(produtos);
+console.log(typeof lerJSON(texto));
+console.log("--- Tarefa 11: Relatório final ---");
+gerarRelatorio(nomeLoja, produtos)
